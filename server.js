@@ -296,6 +296,68 @@ app.post('/send-verify-user-account', async (req, res) => {
         res.status(500).send('Error sending email');
     }
 });
+
+
+app.post('/send-account-pending-verification-email', async (req, res) => {
+    // console.log("logged in post request", req.body) 
+    const { email , fullname } = req.body;
+    
+    function splitName(fullname) {
+        // Split the input string by space
+        const parts = fullname.split(' ');
+        
+        // Return the second part (index 1)
+        return parts.length > 1 ? parts[1] : " ";
+    }
+    
+
+    console.log("an attempt was made to post a request ", req.body)
+    try {
+  
+    const emailTemplate = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>You just signed up on Afritech!!!!</title>
+    </head>
+    <body id="email-template">
+        <p class="email-p">
+            <p>Hello <b>${splitName(fullname)}</b>,</p> 
+            <p>You just signed up on Afritech. Your account is pending verification.</p>  
+            <p>Check back within 2hrs. In the meantime you can browse through the platform and get familiar <a href="https://afritech-olive.vercel.app/signin">Click here to Sign in and preview</a>.</p> 
+        </p>
+    
+        <p>Regards,</p>
+        <p>Afritech Team</p>
+    </body>
+    </html>
+    `;
+     
+        const msg = {
+            to: email,
+            from: 'afritech19@gmail.com',
+            subject: 'You Just Signed up on Afritech and your Account is Pending Verification',
+            text: 'and easy to do anywhere, even with Node.js',
+            html: emailTemplate,
+        };
+     
+        // Send email using SendGrid
+        sgMail.send(msg)
+            .then(() => {
+                console.log('Email sent')
+                console.log(msg)
+            })
+            .catch((error) => {
+                console.error(error)
+            })
+        res.status(200).send('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        console.error('Error sending email:', error.message, error);
+        res.status(500).send('Error sending email');
+    }
+});
 // Start the server
 app.listen(port, () => {
     console.log(`You are running on port ${port}`);
