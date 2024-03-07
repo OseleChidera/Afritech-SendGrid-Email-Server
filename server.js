@@ -74,6 +74,7 @@ app.post('/send-order-confirmation-email', async (req, res) => {
             Hello <b>${splitName(fullName)}</b>, <br>
             You just checked out <b>#${orderID}</b> totaling <b>₦${formatNumberWithCommas(amountLeftToPay)}</b> on Afritech 
         </p>
+        <p>You can only cancel this order as long as no payment has been made towards this particular order.</p>
     
         <h4>Here is your order breakdown:</h4>
         <div className="email-product-list">
@@ -101,6 +102,102 @@ app.post('/send-order-confirmation-email', async (req, res) => {
             to: userEmail,
             from: 'afritech19@gmail.com',
             subject: 'You just checked out an order on Afritech',
+            text: 'and easy to do anywhere, even with Node.js',
+            html:  emailTemplate,
+        };
+     
+        // Send email using SendGrid
+        sgMail.send(msg)
+            .then(() => {
+                console.log('Email sent')
+                console.log(msg)
+            })
+            .catch((error) => {
+                console.error(error)
+            })
+        res.status(200).send('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        console.error('Error sending email:', error.message, error);
+        res.status(500).send('Error sending email');
+    }
+});
+
+app.post('/send-order-cancelled-email', async (req, res) => {
+    // console.log("logged in post request", req.body) 
+    // const { fullName, userEmail, orderID, orderArray,amountLeftToPay } = req.body;
+    const { orderID,productsArray, data , financingTotal } = req.body;
+    // console.log(fullName, userEmail, orderID, orderObject, amountPaid)
+    // console.log("req.body: ", req.body)
+
+    
+    function splitName(fullName) {
+        // Split the input string by space
+        const parts = fullName.split(' ');
+        
+        // Return the second part (index 1)
+        return parts.length > 1 ? parts[1] : " ";
+    }
+     function formatNumberWithCommas(value) {
+        // Check if value is defined and not null
+        if (value !== undefined && value !== null) {
+            // Convert the number to a string
+            let numberString = value.toString();
+
+            // Use a regular expression to add commas
+            numberString = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+            return numberString;
+        }
+
+        // Return a default value or handle the case when value is undefined or null
+        return "N/A";
+    }
+
+    console.log("an attempt was made to post a request ", req.body)
+    try {
+  
+    
+    const emailTemplate = `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>You just cancelled an order on Afritech!!!</title>
+    </head>
+    <body id="email-template">
+        <p class="email-p">
+            Hello <b>${splitName(data.userData.fullname)}</b>, <br>
+            You just cancelled order <b>#${orderID}</b> totaling <b>₦${formatNumberWithCommas(financingTotal)}</b> on Afritech 
+        </p>
+        <p>If this wasn't you contact customer support and in the meantime reset your password</p>
+    
+        <h4>Here is the order breakdown:</h4>
+        <div className="email-product-list">
+            ${productsArray.map((item) => {
+                return `
+                    <div class="email-product">
+                        <div class="email-product-image">
+                            <img src="${item.imageGalleryImages[0].imageURL}" class="" width="70" height="70" alt="product image"/>
+                        </div>
+                        <div class="email-product-title">
+                            <h3 class="">${item.name} - ₦${formatNumberWithCommas(item.price)}</h3>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        
+        <p>Regards,</p>
+        <p>Afritech Team</p>
+    </body>
+    </html>
+    `;
+     
+        const msg = {
+            to: data.userData.email,
+            from: 'afritech19@gmail.com',
+            subject: 'You just cancelled an order on Afritech',
             text: 'and easy to do anywhere, even with Node.js',
             html:  emailTemplate,
         };
