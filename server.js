@@ -7,7 +7,7 @@ require('dotenv').config(); // Load environment variables from a .env file
 const cors = require('cors'); // Import the CORS middleware for handling cross-origin requests
 const sendGridApiKey = process.env.SENDGRID_API_KEY
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: '*',
 }));
 // Set up SendGrid API key
 sgMail.setApiKey(sendGridApiKey);
